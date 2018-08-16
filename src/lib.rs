@@ -12,16 +12,19 @@ type PCMOutput = f64;
 type Herts = f64;
 
 /// The core sine wave (normalized).
+#[inline(always)]
 fn sine_wave(t: Time) -> PCMOutput {
   unsafe { sinf64(t * TWICE_PI) }
 }
 
 /// The square wave (normalized).
+#[inline(always)]
 fn square_wave(t: Time) -> PCMOutput {
   unsafe { powf64(-1., floorf64(2. * t)) }
 }
 
 // The triangle wave (normalized).
+#[inline(always)]
 fn triangle_wave(t: Time) -> PCMOutput {
   unsafe { fabsf64(4. * (t - 0.5) % 1. - 2.) - 1. }
 }
