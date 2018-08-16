@@ -29,6 +29,13 @@ fn triangle_wave(t: Time) -> PCMOutput {
   unsafe { fabsf64(4. * (t - 0.5) % 1. - 2.) - 1. }
 }
 
+// The sawtooth wave (normalized).
+#[inline(always)]
+fn sawtooth_wave(t: Time) -> PCMOutput {
+  2. * ((t - 0.5) % 1.) - 1.
+}
+
+
 mod tests {
   use super::*;
 
