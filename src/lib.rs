@@ -1,7 +1,7 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
-use core::intrinsics::sinf64;
+use core::intrinsics::{fabsf64, floorf64, powf64, sinf64};
 use core::f64::EPSILON;
 use core::f64::consts::PI;
 
@@ -9,10 +9,21 @@ const TWICE_PI: f64 = 2. * PI;
 
 type Time = f64;
 type PCMOutput = f64;
+type Herts = f64;
 
 /// The core sine wave (normalized).
 fn sine_wave(t: Time) -> PCMOutput {
   unsafe { sinf64(t * TWICE_PI) }
+}
+
+/// The square wave (normalized).
+fn square_wave(t: Time) -> PCMOutput {
+  unsafe { powf64(-1., floorf64(2. * t)) }
+}
+
+// The triangle wave (normalized).
+fn triangle_wave(t: Time) -> PCMOutput {
+  unsafe { fabsf64(4. * (t - 0.5) % 1. - 2.) - 1. }
 }
 
 mod tests {
@@ -35,5 +46,12 @@ mod tests {
     //assert!(eqf(sine_wave(1.), 0.)); // FIXME
     assert!(eqf(sine_wave(0.25), 1.));
     assert!(eqf(sine_wave(0.75), -1.));
+  }
+
+  #[test]
+  fn square_wave_remarkable_values() {
+    assert!(eqf(square_wave(0.), 1.));
+    assert!(eqf(square_wave(0.6), -1.));
+    assert!(eqf(square_wave(0.9), -1.));
   }
 }
