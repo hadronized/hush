@@ -1,13 +1,13 @@
 fn main() {
   for octave in (-2)..9 {
     let halves = (octave - 4) * 12;
-    println!("const A{}: Note = Note({:.5})", octave, pitch(halves));
-    println!("const B{}: Note = Note({:.5})", octave, pitch(halves + 2));
-    println!("const C{}: Note = Note({:.5})", octave + 1, pitch(halves + 3));
-    println!("const D{}: Note = Note({:.5})", octave + 1, pitch(halves + 5));
-    println!("const E{}: Note = Note({:.5})", octave + 1, pitch(halves + 7));
-    println!("const F{}: Note = Note({:.5})", octave + 1, pitch(halves + 8));
-    println!("const G{}: Note = Note({:.5})", octave + 1, pitch(halves + 10));
+    println!("const A{}: Note = Note({:.5});", octave, pitch(halves));
+    println!("const B{}: Note = Note({:.5});", octave, pitch(halves + 2));
+    println!("const C{}: Note = Note({:.5});", octave + 1, pitch(halves + 3));
+    println!("const D{}: Note = Note({:.5});", octave + 1, pitch(halves + 5));
+    println!("const E{}: Note = Note({:.5});", octave + 1, pitch(halves + 7));
+    println!("const F{}: Note = Note({:.5});", octave + 1, pitch(halves + 8));
+    println!("const G{}: Note = Note({:.5});", octave + 1, pitch(halves + 10));
   }
 }
 
