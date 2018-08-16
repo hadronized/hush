@@ -1,6 +1,8 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
+mod notes;
+
 use core::intrinsics::{fabsf64, floorf64, powf64, sinf64};
 use core::f64::EPSILON;
 use core::f64::consts::PI;
@@ -9,7 +11,6 @@ const TWICE_PI: f64 = 2. * PI;
 
 type Time = f64;
 type PCMOutput = f64;
-type Herts = f64;
 
 /// The core sine wave (normalized).
 #[inline(always)]
@@ -34,7 +35,6 @@ fn triangle_wave(t: Time) -> PCMOutput {
 fn sawtooth_wave(t: Time) -> PCMOutput {
   2. * ((t - 0.5) % 1.) - 1.
 }
-
 
 mod tests {
   use super::*;
