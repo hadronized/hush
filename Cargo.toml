@@ -1,18 +1,6 @@
-[package]
-name = "hush"
-version = "0.1.0"
-license = "BSD-3-Clause"
-authors = ["Dimitri Sabadie <dimitri.sabadie@gmail.com>"]
-description = "Demoscene software synthesizer designed to be embedded in intros"
-keywords = ["audio", "music", "demoscene", "synthesizer"]
-categories = ["multimedia::audio"]
-homepage = "https://github.com/phaazon/hush"
-repository = "https://github.com/phaazon/hush"
-documentation = "https://docs.rs/hush"
-readme = "README.md"
+[workspace]
 
-[badges]
-travis-ci = { repository = "phaazon/hush", branch = "master" }
-is-it-maintained-issue-resolution = { repository = "phaazon/hush" }
-is-it-maintained-open-issues = { repository = "phaazon/hush" }
-maintenance = { status = "actively-developed" }
+members = [
+  "hush",
+  "generate-note-frequencies",
+]
