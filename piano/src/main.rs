@@ -2,10 +2,14 @@ extern crate hush;
 extern crate luminance_glfw;
 
 use hush::note;
+use hush::{Instrument, SampleTime, SineSynth};
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
 
 fn main() {
   let mut surface = GlfwSurface::new(WindowDim::Windowed(940, 560), "hush piano", WindowOpt::default()).expect("GLFW surface");
+
+  // for now we’ll be testing the SineSynth only
+  let mut synth = SineSynth::new();
 
   'app: loop {
     for event in surface.poll_events() {
@@ -16,55 +20,53 @@ fn main() {
 
         // key on
         WindowEvent::Key(key, _, Action::Press, _) => {
-          println!("key: {:?}", key);
-
           match key {
             Key::Q => {
-              println!("{:?} on", note::C4);
+              synth.note_on(note::C4, SampleTime(0));
             }
 
             Key::W => {
-              println!("{:?} on", note::DB4);
+              synth.note_on(note::DB4, SampleTime(0));
             }
 
             Key::E => {
-              println!("{:?} on", note::D4);
+              synth.note_on(note::D4, SampleTime(0));
             }
 
             Key::R => {
-              println!("{:?} on", note::EB4);
+              synth.note_on(note::EB4, SampleTime(0));
             }
 
             Key::T => {
-              println!("{:?} on", note::E4);
+              synth.note_on(note::E4, SampleTime(0));
             }
 
             Key::Y => {
-              println!("{:?} on", note::F4);
+              synth.note_on(note::F4, SampleTime(0));
             }
 
             Key::U => {
-              println!("{:?} on", note::GB4);
+              synth.note_on(note::GB4, SampleTime(0));
             }
 
             Key::I => {
-              println!("{:?} on", note::G4);
+              synth.note_on(note::G4, SampleTime(0));
             }
 
             Key::O => {
-              println!("{:?} on", note::AB4);
+              synth.note_on(note::AB4, SampleTime(0));
             }
 
             Key::P => {
-              println!("{:?} on", note::A5);
+              synth.note_on(note::A5, SampleTime(0));
             }
 
             Key::LeftBracket => {
-              println!("{:?} on", note::BB5);
+              synth.note_on(note::BB5, SampleTime(0));
             }
 
             Key::RightBracket => {
-              println!("{:?} on", note::B5);
+              synth.note_on(note::B5, SampleTime(0));
             }
 
             _ => ()
@@ -73,10 +75,29 @@ fn main() {
 
         // key off
         WindowEvent::Key(key, _, Action::Release, _) => {
+          match key {
+            Key::Q | Key::W | Key::E | Key::R | Key::T | Key::Y | Key::U | Key::I | Key::O | Key::P | Key::LeftBracket | Key::RightBracket => {
+              synth.note_off();
+            }
+
+            _ => ()
+          }
         }
 
         _ => ()
       }
     }
+
+    // ask for a few samples to start with
+    {
+      let samples = synth.get_samples(SampleTime(0), SampleTime(100));
+
+      if !samples.is_empty() {
+        println!("samples\n{:?}", samples);
+      }
+    }
+
+    // automatically toggle the note off for now
+    synth.note_off();
   }
 }

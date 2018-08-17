@@ -67,6 +67,9 @@ impl<F> Oscillator<F> where F: Fn(Time) -> Sample {
 
     assert!(e >= s);
 
+    // clear the buffer
+    self.sampling_buffer.clear();
+
     // generate the samples
     for i in s..e {
       let t = SAMPLING_STEP * i as f64;
@@ -100,7 +103,7 @@ pub trait Instrument {
 /// samples, it will use that kind of discretized time (or indirectly). What is interesting is that
 /// a number of frames is such a time (it’s a difference of sample time), so it’s very easy to
 /// convert from that measure to an actual time that can be used to sample from.
-pub struct SampleTime(usize);
+pub struct SampleTime(pub usize);
 
 /// A note pressed at a given time.
 pub struct PressedNote {
@@ -111,7 +114,7 @@ pub struct PressedNote {
 /// A sine instrument.
 ///
 /// This instrument will play notes over a sine oscillator.
-struct SineSynth {
+pub struct SineSynth {
   pressed: Option<PressedNote>,
   oscillator: Oscillator<fn(Time) -> Sample>
 }
