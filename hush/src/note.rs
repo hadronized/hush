@@ -4,7 +4,14 @@
 
 use hertz::Hertz;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Note(Hertz);
+
+impl Note {
+  pub fn frequency(&self) -> Hertz {
+    self.0
+  }
+}
 
 pub const C_1: Note = Note(8.17580);
 pub const DB_1: Note = Note(8.66196);

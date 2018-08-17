@@ -3,4 +3,8 @@
 members = [
   "hush",
   "generate-note-frequencies",
+  "piano"
 ]
+
+[patch.crates-io]
+hush = { path = "./hush" }
