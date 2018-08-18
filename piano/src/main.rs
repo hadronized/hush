@@ -83,8 +83,6 @@ fn main() {
         writer.write_sample((sample * amplitude) as i16).unwrap();
       }
     }
-
-    writer.finalize();
   }
 
   'app: loop {
