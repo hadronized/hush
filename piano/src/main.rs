@@ -2,8 +2,11 @@ extern crate alto;
 extern crate hush;
 extern crate luminance_glfw;
 
+// test only
+extern crate hound;
+
 use alto::Source;
-use hush::{Instrument, Synth};
+use hush::instrument::{Instrument, Synth};
 use hush::note;
 use hush::time::SampleTime;
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
@@ -25,6 +28,64 @@ fn main() {
   let mut buffers = (0..2).into_iter().map(|_| {
     al_ctx.new_buffer::<alto::Mono<f32>, _>(&vec![0.; 44100], 44100).unwrap()
   }).collect::<Vec<_>>();
+
+  // test only: output a A4 sawtooth into a wav file
+  {
+    let spec = hound::WavSpec {
+      channels: 1,
+      sample_rate: 44100,
+      bits_per_sample: 16,
+      sample_format: hound::SampleFormat::Int,
+    };
+
+    let mut writer = hound::WavWriter::create("/tmp/sawtooth.wav", spec).unwrap();
+
+    synth = Synth::sine();
+    synth.note_on(note::A4, SampleTime(0));
+    {
+      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+
+      for sample in samples {
+        let amplitude = std::i16::MAX as f32;
+        writer.write_sample((sample * amplitude) as i16).unwrap();
+      }
+    }
+
+    synth = Synth::square();
+    synth.note_on(note::A4, SampleTime(0));
+    {
+      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+
+      for sample in samples {
+        let amplitude = std::i16::MAX as f32;
+        writer.write_sample((sample * amplitude) as i16).unwrap();
+      }
+    }
+
+    synth = Synth::triangle();
+    synth.note_on(note::A4, SampleTime(0));
+    {
+      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+
+      for sample in samples {
+        let amplitude = std::i16::MAX as f32;
+        writer.write_sample((sample * amplitude) as i16).unwrap();
+      }
+    }
+
+    synth = Synth::sawtooth();
+    synth.note_on(note::A4, SampleTime(0));
+    {
+      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+
+      for sample in samples {
+        let amplitude = std::i16::MAX as f32;
+        writer.write_sample((sample * amplitude) as i16).unwrap();
+      }
+    }
+
+    writer.finalize();
+  }
 
   'app: loop {
     for event in surface.poll_events() {
