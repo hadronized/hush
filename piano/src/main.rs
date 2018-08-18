@@ -4,14 +4,13 @@ extern crate luminance_glfw;
 
 use alto::Source;
 use hush::note;
-use hush::{Instrument, SampleTime, SineSynth};
+use hush::{Instrument, SampleTime, Synth};
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
 
 fn main() {
   let mut surface = GlfwSurface::new(WindowDim::Windowed(940, 560), "hush piano", WindowOpt::default()).expect("GLFW surface");
 
-  // for now we’ll be testing the SineSynth only
-  let mut synth = SineSynth::new();
+  let mut synth = Synth::sine();
 
   // streaming stuff; we’ll just load data into two buffers to start with
   let alto = alto::Alto::load_default().unwrap();
@@ -36,6 +35,22 @@ fn main() {
         // key on
         WindowEvent::Key(key, _, Action::Press, _) => {
           match key {
+            Key::F1 => {
+              synth = Synth::sine();
+            }
+
+            Key::F2 => {
+              synth = Synth::square();
+            }
+
+            Key::F3 => {
+              synth = Synth::triangle();
+            }
+
+            Key::F4 => {
+              synth = Synth::sawtooth();
+            }
+
             Key::Q => {
               println!("playing C4");
               synth.note_on(note::C4, SampleTime(0));

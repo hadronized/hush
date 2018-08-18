@@ -40,7 +40,7 @@ pub fn triangle_wave(t: Time) -> Sample {
 /// The sawtooth wave (normalized).
 #[inline(always)]
 pub fn sawtooth_wave(t: Time) -> Sample {
-  2. * ((t - 0.5) % 1.) - 1.
+  2. * (-t % 1.) - 1.
 }
 
 /// Oscillator.
@@ -114,26 +114,51 @@ pub struct PressedNote {
   time: SampleTime
 }
 
-/// A sine instrument.
-///
-/// This instrument will play notes over a sine oscillator.
-pub struct SineSynth {
+/// A synth.
+pub struct Synth {
   pressed: Option<PressedNote>,
   oscillator: Oscillator<fn(Time) -> Sample>
 }
 
-impl SineSynth {
-  pub fn new() -> Self {
+impl Synth {
+  pub fn sine() -> Self {
     let oscillator = Oscillator::new(sine_wave as fn(_) -> _);
 
-    SineSynth {
+    Synth {
+      pressed: None,
+      oscillator
+    }
+  }
+
+  pub fn square() -> Self {
+    let oscillator = Oscillator::new(square_wave as fn(_) -> _);
+
+    Synth {
+      pressed: None,
+      oscillator
+    }
+  }
+
+  pub fn triangle() -> Self {
+    let oscillator = Oscillator::new(triangle_wave as fn(_) -> _);
+
+    Synth {
+      pressed: None,
+      oscillator
+    }
+  }
+
+  pub fn sawtooth() -> Self {
+    let oscillator = Oscillator::new(sawtooth_wave as fn(_) -> _);
+
+    Synth {
       pressed: None,
       oscillator
     }
   }
 }
 
-impl Instrument for SineSynth {
+impl Instrument for Synth {
   fn note_on(&mut self, note: Note, time: SampleTime) {
     self.pressed = Some(PressedNote { note, time });
   }
