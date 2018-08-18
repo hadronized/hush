@@ -3,8 +3,9 @@ extern crate hush;
 extern crate luminance_glfw;
 
 use alto::Source;
+use hush::{Instrument, Synth};
 use hush::note;
-use hush::{Instrument, SampleTime, Synth};
+use hush::time::SampleTime;
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
 
 fn main() {

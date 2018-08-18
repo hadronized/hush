@@ -4,8 +4,10 @@
 
 extern crate alloc;
 
+pub mod adsr;
 pub mod hertz;
 pub mod note;
+pub mod time;
 
 use alloc::vec::Vec;
 use core::intrinsics::{fabsf32, floorf32, powf32, sinf32};
@@ -13,10 +15,10 @@ use core::f32::consts::PI;
 
 use hertz::Hertz;
 use note::Note;
+use time::{SampleTime, Time};
 
 const TWICE_PI: f32 = 2. * PI;
 
-pub type Time = f32;
 pub type Sample = f32;
 
 /// The core sine wave (normalized).
@@ -100,14 +102,6 @@ pub trait Instrument {
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
 }
 
-/// Sample time.
-///
-/// A sample time is a discretized time used to sample an oscillator. When a DSP asks for signal
-/// samples, it will use that kind of discretized time (or indirectly). What is interesting is that
-/// a number of frames is such a time (it’s a difference of sample time), so it’s very easy to
-/// convert from that measure to an actual time that can be used to sample from.
-pub struct SampleTime(pub usize);
-
 /// A note pressed at a given time.
 pub struct PressedNote {
   note: Note,
@@ -177,87 +171,6 @@ impl Instrument for Synth {
 
       Some(ref pressed) => {
         self.oscillator.sample(start, end, pressed.note.frequency())
-      }
-    }
-  }
-}
-
-/// State of an ADSR.
-pub enum ADSRState {
-  /// The ADSR was enabled.
-  ///
-  /// Also contains the time at which it was switched on.
-  On(Time),
-  /// The ADSR was disabled.
-  ///
-  /// Also contains th etime at which it was switched off.
-  Off(Time)
-}
-
-/// A normalized ADSR (Attack–Decay–Sustain–Release) envelope.
-///
-/// ADSR envelopes can be used to implement various of effect: amplitude modulation, pitch
-/// modulation, etc.
-///
-/// The minimal value an ADSR gives you is 0. The maximal value an ADSR envelope gives you is 1.
-pub struct ADSR {
-  attack: Time,
-  decay: Time,
-  sustain: f32,
-  release: Time,
-  state: ADSRState
-}
-
-impl ADSR {
-  fn new(attack: Time, decay: Time, sustain: f32, release: Time) -> Option<Self> {
-    if attack <= 0. || decay <= 0. || sustain < 0. || release < 0. {
-      return None;
-    }
-
-    Some(Self {
-      attack,
-      decay,
-      sustain,
-      release,
-      state: ADSRState::Off(-1. / 0.) // -Inf should be enough for anyone trying to release :D
-    })
-  }
-
-  // Switch on.
-  fn on(&mut self, t: Time) {
-    self.state = ADSRState::On(t);
-  }
-
-  // Switch off.
-  fn off(&mut self, t: Time) {
-    self.state = ADSRState::Off(t);
-  }
-
-  // Get the current value based on the current time.
-  fn get(&self, t: Time) -> f32 {
-    match self.state {
-      ADSRState::On(t_0) => {
-        let attack_ = t_0 + self.attack;
-
-        if t <= attack_ { // attacking
-          return (t - t_0) / self.attack;
-        }
-
-        let decay_ = attack_ + self.decay;
-        
-        if t <= t_0 + decay_{ // decaying
-          let nt = (t - attack_) / self.decay;
-          1. + nt * (self.sustain - 1.)
-        } else { // sustaining
-          self.sustain
-        }
-      }
-
-      ADSRState::Off(t_0) => {
-        // release only possible here
-        let nt = (t - t_0) / self.release;
-        let q = (1. - nt) * self.sustain;
-        q.max(0.) // ensure we don’t get weird negative values if we forget to switch the ADSR off
       }
     }
   }
