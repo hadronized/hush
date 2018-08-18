@@ -8,33 +8,33 @@ pub mod hertz;
 pub mod note;
 
 use alloc::vec::Vec;
-use core::intrinsics::{fabsf64, floorf64, powf64, sinf64};
-use core::f64::consts::PI;
+use core::intrinsics::{fabsf32, floorf32, powf32, sinf32};
+use core::f32::consts::PI;
 
 use hertz::Hertz;
 use note::Note;
 
-const TWICE_PI: f64 = 2. * PI;
+const TWICE_PI: f32 = 2. * PI;
 
-pub type Time = f64;
-pub type Sample = f64;
+pub type Time = f32;
+pub type Sample = f32;
 
 /// The core sine wave (normalized).
 #[inline(always)]
 pub fn sine_wave(t: Time) -> Sample {
-  unsafe { sinf64(t * TWICE_PI) }
+  unsafe { sinf32(t * TWICE_PI) }
 }
 
 /// The square wave (normalized).
 #[inline(always)]
 pub fn square_wave(t: Time) -> Sample {
-  unsafe { powf64(-1., floorf64(2. * t)) }
+  unsafe { powf32(-1., floorf32(2. * t)) }
 }
 
 /// The triangle wave (normalized).
 #[inline(always)]
 pub fn triangle_wave(t: Time) -> Sample {
-  unsafe { fabsf64(4. * (t - 0.5) % 1. - 2.) - 1. }
+  unsafe { fabsf32(4. * (t - 0.5) % 1. - 2.) - 1. }
 }
 
 /// The sawtooth wave (normalized).
@@ -50,7 +50,7 @@ pub struct Oscillator<F> where F: Fn(Time) -> Sample {
 }
 
 // Step between two sampling points when sampling at 44.1 kHz.
-const SAMPLING_STEP: f64 = 1. / 44100.;
+const SAMPLING_STEP: f32 = 1. / 44100.;
 
 impl<F> Oscillator<F> where F: Fn(Time) -> Sample {
   pub fn new(f: F) -> Self {
@@ -72,7 +72,7 @@ impl<F> Oscillator<F> where F: Fn(Time) -> Sample {
 
     // generate the samples
     for i in s..e {
-      let t = SAMPLING_STEP * i as f64;
+      let t = SAMPLING_STEP * i as f32;
       let signal = (self.wave)(t * freq);
 
       self.sampling_buffer.push(signal);
@@ -92,6 +92,9 @@ pub trait Instrument {
 
   // Release a note.
   fn note_off(&mut self);
+
+  // Is the instrument currently active / playing?
+  fn is_active(&self) -> bool;
 
   // Get a few samples from this instrument.
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
@@ -137,6 +140,10 @@ impl Instrument for SineSynth {
 
   fn note_off(&mut self) {
     self.pressed = None;
+  }
+
+  fn is_active(&self) -> bool {
+    self.pressed.is_some()
   }
 
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample] {

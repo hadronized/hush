@@ -1,1 +1,1 @@
-pub type Hertz = f64;
+pub type Hertz = f32;

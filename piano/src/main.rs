@@ -2,6 +2,7 @@ extern crate alto;
 extern crate hush;
 extern crate luminance_glfw;
 
+use alto::Source;
 use hush::note;
 use hush::{Instrument, SampleTime, SineSynth};
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
@@ -16,11 +17,14 @@ fn main() {
   let alto = alto::Alto::load_default().unwrap();
   let al_device = alto.open(None).unwrap();
   let al_ctx = al_device.new_context(None).unwrap();
+
   let mut source = al_ctx.new_streaming_source().unwrap(); // the thing that can play buffers
-  let al_buffers = (0..2).into_iter().map(|_| {
-    al_ctx.new_buffer::<alto::Stereo<f32>, _>(&vec![0; 44100], 44100).unwrap()
+
+  // create blank buffers; this array represents idle buffers (i.e. blank buffers that have not been
+  // queued on a source yet)
+  let mut buffers = (0..2).into_iter().map(|_| {
+    al_ctx.new_buffer::<alto::Mono<f32>, _>(&vec![0.; 44100], 44100).unwrap()
   }).collect::<Vec<_>>();
-  let idle_buffer = None;
 
   'app: loop {
     for event in surface.poll_events() {
@@ -33,51 +37,63 @@ fn main() {
         WindowEvent::Key(key, _, Action::Press, _) => {
           match key {
             Key::Q => {
+              println!("playing C4");
               synth.note_on(note::C4, SampleTime(0));
             }
 
             Key::W => {
+              println!("playing DB4");
               synth.note_on(note::DB4, SampleTime(0));
             }
 
             Key::E => {
+              println!("playing D4");
               synth.note_on(note::D4, SampleTime(0));
             }
 
             Key::R => {
+              println!("playing EB4");
               synth.note_on(note::EB4, SampleTime(0));
             }
 
             Key::T => {
+              println!("playing E4");
               synth.note_on(note::E4, SampleTime(0));
             }
 
             Key::Y => {
+              println!("playing F4");
               synth.note_on(note::F4, SampleTime(0));
             }
 
             Key::U => {
+              println!("playing GB4");
               synth.note_on(note::GB4, SampleTime(0));
             }
 
             Key::I => {
+              println!("playing G4");
               synth.note_on(note::G4, SampleTime(0));
             }
 
             Key::O => {
+              println!("playing AB4");
               synth.note_on(note::AB4, SampleTime(0));
             }
 
             Key::P => {
-              synth.note_on(note::A5, SampleTime(0));
+              println!("playing A4");
+              synth.note_on(note::A4, SampleTime(0));
             }
 
             Key::LeftBracket => {
-              synth.note_on(note::BB5, SampleTime(0));
+              println!("playing BB4");
+              synth.note_on(note::BB4, SampleTime(0));
             }
 
             Key::RightBracket => {
-              synth.note_on(note::B5, SampleTime(0));
+              println!("playing B4");
+              synth.note_on(note::B4, SampleTime(0));
             }
 
             _ => ()
@@ -99,26 +115,35 @@ fn main() {
       }
     }
 
-    // check whether a buffer has completely been processed (i.e. we need to load more data) and
-    // perform buffers swapping if needed
-    if source.buffers_processed() > 0 {
-      // unqueue the currently playing buffer
-      let mut unqueued = source.unqueue_buffer().expect("unqueued buffer");
-
-      // FIXME: we typically want to do this in a thread
-      // ask for the next chunks of samples
+    if source.state() != alto::SourceState::Playing {
+      // get one second of samples into a buffer
       let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
-      if !samples.is_empty() {
-        unqueued.set_data(samples, 44100);
-        source.queue_buffer(unqueued);
+      if samples.is_empty() {
+        // nothing to play, let’s just unqueue the buffers from the DSP
+        loop {
+          if buffers.len() == 2 {
+            break;
+          }
+
+          buffers.push(source.unqueue_buffer().expect("unqueue buffer"));
+        }
       } else {
-        // no data to queue the buffer with, let’s just put it away
-        idle_buffer = Some(unqueued);
+        let mut buffer = buffers.swap_remove(0);
+
+        // load the fresh samples into the buffer
+        buffer.set_data::<alto::Mono<f32>, _>(samples, 44100);
+        // enqueue the buffer
+        source.queue_buffer(buffer);
+        source.play();
+      }
+    } else {
+      // we are currently playing something
+      if synth.is_active() {
+        // active and playing
+      } else {
+        // not active but still playing
       }
     }
-
-    // automatically toggle the note off for now
-    synth.note_off();
   }
 }

@@ -17,6 +17,6 @@ fn main() {
 }
 
 // Generate the pitch of note distant to C4 by n half-tones.
-fn pitch(n: isize) -> f64 {
-  2.0f64.powf(n as f64 / 12.) * 440.
+fn pitch(n: isize) -> f32 {
+  2.0f32.powf(n as f32 / 12.) * 440.
 }
