@@ -3,7 +3,7 @@
 members = [
   "hush",
   "generate-note-frequencies",
-  "piano"
+  "keyboard"
 ]
 
 [patch.crates-io]
