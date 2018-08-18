@@ -1,3 +1,4 @@
+extern crate alto;
 extern crate hush;
 extern crate luminance_glfw;
 
@@ -10,6 +11,16 @@ fn main() {
 
   // for now we’ll be testing the SineSynth only
   let mut synth = SineSynth::new();
+
+  // streaming stuff; we’ll just load data into two buffers to start with
+  let alto = alto::Alto::load_default().unwrap();
+  let al_device = alto.open(None).unwrap();
+  let al_ctx = al_device.new_context(None).unwrap();
+  let mut source = al_ctx.new_streaming_source().unwrap(); // the thing that can play buffers
+  let al_buffers = (0..2).into_iter().map(|_| {
+    al_ctx.new_buffer::<alto::Stereo<f32>, _>(&vec![0; 44100], 44100).unwrap()
+  }).collect::<Vec<_>>();
+  let idle_buffer = None;
 
   'app: loop {
     for event in surface.poll_events() {
@@ -88,12 +99,22 @@ fn main() {
       }
     }
 
-    // ask for a few samples to start with
-    {
-      let samples = synth.get_samples(SampleTime(0), SampleTime(100));
+    // check whether a buffer has completely been processed (i.e. we need to load more data) and
+    // perform buffers swapping if needed
+    if source.buffers_processed() > 0 {
+      // unqueue the currently playing buffer
+      let mut unqueued = source.unqueue_buffer().expect("unqueued buffer");
+
+      // FIXME: we typically want to do this in a thread
+      // ask for the next chunks of samples
+      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
       if !samples.is_empty() {
-        println!("samples\n{:?}", samples);
+        unqueued.set_data(samples, 44100);
+        source.queue_buffer(unqueued);
+      } else {
+        // no data to queue the buffer with, let’s just put it away
+        idle_buffer = Some(unqueued);
       }
     }
 
