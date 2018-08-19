@@ -5,6 +5,8 @@ extern crate luminance_glfw;
 // test only
 extern crate hound;
 
+mod streaming;
+
 use alto::Source;
 use hush::instrument::{Instrument, Synth};
 use hush::note;
@@ -29,61 +31,61 @@ fn main() {
     al_ctx.new_buffer::<alto::Mono<f32>, _>(&vec![0.; 44100], 44100).unwrap()
   }).collect::<Vec<_>>();
 
-  // test only: output a A4 sawtooth into a wav file
-  {
-    let spec = hound::WavSpec {
-      channels: 1,
-      sample_rate: 44100,
-      bits_per_sample: 16,
-      sample_format: hound::SampleFormat::Int,
-    };
+  //// test only: output a A4 sawtooth into a wav file
+  //{
+  //  let spec = hound::WavSpec {
+  //    channels: 1,
+  //    sample_rate: 44100,
+  //    bits_per_sample: 16,
+  //    sample_format: hound::SampleFormat::Int,
+  //  };
 
-    let mut writer = hound::WavWriter::create("/tmp/sawtooth.wav", spec).unwrap();
+  //  let mut writer = hound::WavWriter::create("/tmp/sawtooth.wav", spec).unwrap();
 
-    synth = Synth::sine();
-    synth.note_on(note::A4, SampleTime(0));
-    {
-      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+  //  synth = Synth::sine();
+  //  synth.note_on(note::A4, SampleTime(0));
+  //  {
+  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
-      for sample in samples {
-        let amplitude = std::i16::MAX as f32;
-        writer.write_sample((sample * amplitude) as i16).unwrap();
-      }
-    }
+  //    for sample in samples {
+  //      let amplitude = std::i16::MAX as f32;
+  //      writer.write_sample((sample * amplitude) as i16).unwrap();
+  //    }
+  //  }
 
-    synth = Synth::square();
-    synth.note_on(note::A4, SampleTime(0));
-    {
-      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+  //  synth = Synth::square();
+  //  synth.note_on(note::A4, SampleTime(0));
+  //  {
+  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
-      for sample in samples {
-        let amplitude = std::i16::MAX as f32;
-        writer.write_sample((sample * amplitude) as i16).unwrap();
-      }
-    }
+  //    for sample in samples {
+  //      let amplitude = std::i16::MAX as f32;
+  //      writer.write_sample((sample * amplitude) as i16).unwrap();
+  //    }
+  //  }
 
-    synth = Synth::triangle();
-    synth.note_on(note::A4, SampleTime(0));
-    {
-      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+  //  synth = Synth::triangle();
+  //  synth.note_on(note::A4, SampleTime(0));
+  //  {
+  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
-      for sample in samples {
-        let amplitude = std::i16::MAX as f32;
-        writer.write_sample((sample * amplitude) as i16).unwrap();
-      }
-    }
+  //    for sample in samples {
+  //      let amplitude = std::i16::MAX as f32;
+  //      writer.write_sample((sample * amplitude) as i16).unwrap();
+  //    }
+  //  }
 
-    synth = Synth::sawtooth();
-    synth.note_on(note::A4, SampleTime(0));
-    {
-      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
+  //  synth = Synth::sawtooth();
+  //  synth.note_on(note::A4, SampleTime(0));
+  //  {
+  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
 
-      for sample in samples {
-        let amplitude = std::i16::MAX as f32;
-        writer.write_sample((sample * amplitude) as i16).unwrap();
-      }
-    }
-  }
+  //    for sample in samples {
+  //      let amplitude = std::i16::MAX as f32;
+  //      writer.write_sample((sample * amplitude) as i16).unwrap();
+  //    }
+  //  }
+  //}
 
   'app: loop {
     for event in surface.poll_events() {
@@ -112,62 +114,62 @@ fn main() {
             }
 
             Key::Q => {
-              println!("playing C4");
+              println!("on C4");
               synth.note_on(note::C4, SampleTime(0));
             }
 
             Key::W => {
-              println!("playing DB4");
+              println!("on DB4");
               synth.note_on(note::DB4, SampleTime(0));
             }
 
             Key::E => {
-              println!("playing D4");
+              println!("on D4");
               synth.note_on(note::D4, SampleTime(0));
             }
 
             Key::R => {
-              println!("playing EB4");
+              println!("on EB4");
               synth.note_on(note::EB4, SampleTime(0));
             }
 
             Key::T => {
-              println!("playing E4");
+              println!("on E4");
               synth.note_on(note::E4, SampleTime(0));
             }
 
             Key::Y => {
-              println!("playing F4");
+              println!("on F4");
               synth.note_on(note::F4, SampleTime(0));
             }
 
             Key::U => {
-              println!("playing GB4");
+              println!("on GB4");
               synth.note_on(note::GB4, SampleTime(0));
             }
 
             Key::I => {
-              println!("playing G4");
+              println!("on G4");
               synth.note_on(note::G4, SampleTime(0));
             }
 
             Key::O => {
-              println!("playing AB4");
+              println!("on AB4");
               synth.note_on(note::AB4, SampleTime(0));
             }
 
             Key::P => {
-              println!("playing A4");
+              println!("on A4");
               synth.note_on(note::A4, SampleTime(0));
             }
 
             Key::LeftBracket => {
-              println!("playing BB4");
+              println!("on BB4");
               synth.note_on(note::BB4, SampleTime(0));
             }
 
             Key::RightBracket => {
-              println!("playing B4");
+              println!("on B4");
               synth.note_on(note::B4, SampleTime(0));
             }
 
@@ -179,6 +181,7 @@ fn main() {
         WindowEvent::Key(key, _, Action::Release, _) => {
           match key {
             Key::Q | Key::W | Key::E | Key::R | Key::T | Key::Y | Key::U | Key::I | Key::O | Key::P | Key::LeftBracket | Key::RightBracket => {
+              println!("off");
               synth.note_off();
             }
 
