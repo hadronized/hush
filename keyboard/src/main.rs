@@ -18,74 +18,13 @@ fn main() {
 
   let mut synth = Synth::sine();
 
-  // streaming stuff; we’ll just load data into two buffers to start with
+  // backend stuff: OpenAL here
   let alto = alto::Alto::load_default().unwrap();
   let al_device = alto.open(None).unwrap();
-  let al_ctx = al_device.new_context(None).unwrap();
+  let mut al_ctx = al_device.new_context(None).unwrap();
 
-  let mut source = al_ctx.new_streaming_source().unwrap(); // the thing that can play buffers
-
-  // create blank buffers; this array represents idle buffers (i.e. blank buffers that have not been
-  // queued on a source yet)
-  let mut buffers = (0..2).into_iter().map(|_| {
-    al_ctx.new_buffer::<alto::Mono<f32>, _>(&vec![0.; 44100], 44100).unwrap()
-  }).collect::<Vec<_>>();
-
-  //// test only: output a A4 sawtooth into a wav file
-  //{
-  //  let spec = hound::WavSpec {
-  //    channels: 1,
-  //    sample_rate: 44100,
-  //    bits_per_sample: 16,
-  //    sample_format: hound::SampleFormat::Int,
-  //  };
-
-  //  let mut writer = hound::WavWriter::create("/tmp/sawtooth.wav", spec).unwrap();
-
-  //  synth = Synth::sine();
-  //  synth.note_on(note::A4, SampleTime(0));
-  //  {
-  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
-
-  //    for sample in samples {
-  //      let amplitude = std::i16::MAX as f32;
-  //      writer.write_sample((sample * amplitude) as i16).unwrap();
-  //    }
-  //  }
-
-  //  synth = Synth::square();
-  //  synth.note_on(note::A4, SampleTime(0));
-  //  {
-  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
-
-  //    for sample in samples {
-  //      let amplitude = std::i16::MAX as f32;
-  //      writer.write_sample((sample * amplitude) as i16).unwrap();
-  //    }
-  //  }
-
-  //  synth = Synth::triangle();
-  //  synth.note_on(note::A4, SampleTime(0));
-  //  {
-  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
-
-  //    for sample in samples {
-  //      let amplitude = std::i16::MAX as f32;
-  //      writer.write_sample((sample * amplitude) as i16).unwrap();
-  //    }
-  //  }
-
-  //  synth = Synth::sawtooth();
-  //  synth.note_on(note::A4, SampleTime(0));
-  //  {
-  //    let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
-
-  //    for sample in samples {
-  //      let amplitude = std::i16::MAX as f32;
-  //      writer.write_sample((sample * amplitude) as i16).unwrap();
-  //    }
-  //  }
-  //}
+  // for streaming
+  let mut streamer = streaming::Streamer::new(&mut al_ctx);
 
   'app: loop {
     for event in surface.poll_events() {
@@ -193,35 +132,7 @@ fn main() {
       }
     }
 
-    if source.state() != alto::SourceState::Playing {
-      // get one second of samples into a buffer
-      let samples = synth.get_samples(SampleTime(0), SampleTime(44100));
-
-      if samples.is_empty() {
-        // nothing to play, let’s just unqueue the buffers from the DSP
-        loop {
-          if buffers.len() == 2 {
-            break;
-          }
-
-          buffers.push(source.unqueue_buffer().expect("unqueue buffer"));
-        }
-      } else {
-        let mut buffer = buffers.swap_remove(0);
-
-        // load the fresh samples into the buffer
-        buffer.set_data::<alto::Mono<f32>, _>(samples, 44100);
-        // enqueue the buffer
-        source.queue_buffer(buffer);
-        source.play();
-      }
-    } else {
-      // we are currently playing something
-      if synth.is_active() {
-        // active and playing
-      } else {
-        // not active but still playing
-      }
-    }
+    // handle streaming
+    streamer.refresh(&mut synth);
   }
 }
