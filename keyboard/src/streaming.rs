@@ -66,7 +66,7 @@ impl Streamer {
     // TODO: maybe add the possibility to add more buffer?
     let mut buffer = self.buffers.swap_remove(0);
     let start = self.processed_samples_nb;
-    let end = start + SAMPLE_READAHEAD - 1;
+    let end = start + SAMPLE_READAHEAD;
     let samples = instrument.get_samples(SampleTime(start), SampleTime(end));
 
     // upload the samples to the DSP buffer
