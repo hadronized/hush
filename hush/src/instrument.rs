@@ -9,13 +9,13 @@ use sample::Sample;
 /// An instrument.
 ///
 /// An instrument can play notes by pressing and releasing them. Notes can be played independently
-/// from each other, allowing for a rich and mixed audio signal. This is done through “note slots”.
+/// from each other, allowing for a rich and mixed audio signal. This is done through “note channels”.
 pub trait Instrument {
-  /// Trigger a note at a given time on a given note slot.
-  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteSlot;
+  /// Trigger a note at a given time on a given note channel.
+  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteChannel;
 
   /// Release a note.
-  fn note_off(&mut self, note_slot: NoteSlot);
+  fn note_off(&mut self, note_channel: NoteChannel);
 
   /// Is the instrument currently active / playing?
   fn is_active(&self) -> bool;
@@ -24,16 +24,16 @@ pub trait Instrument {
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
 }
 
-/// A note slot.
+/// A note channel.
 ///
-/// When an instrument is asked to play a note, it does it on a “note slot”, allowing for multiple
-/// notes to be played at the same time. The number of available slots is instrument-specific.
+/// When an instrument is asked to play a note, it does it on a “note channel”, allowing for multiple
+/// notes to be played at the same time. The number of available channels is instrument-specific.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct NoteSlot(usize);
+pub struct NoteChannel(usize);
 
-impl NoteSlot {
+impl NoteChannel {
   pub fn new(i: usize) -> Self {
-    NoteSlot(i)
+    NoteChannel(i)
   }
 
   pub fn default() -> Self {
@@ -44,7 +44,7 @@ impl NoteSlot {
 /// A note pressed at a given time.
 pub struct PressedNote {
   note: Note,
-  slot: NoteSlot,
+  channel: NoteChannel,
   time: SampleTime
 }
 
@@ -93,15 +93,15 @@ impl Synth {
 }
 
 impl Instrument for Synth {
-  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteSlot {
-    let slot = NoteSlot::default();
+  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteChannel {
+    let channel = NoteChannel::default();
 
-    self.pressed = Some(PressedNote { note, slot, time });
+    self.pressed = Some(PressedNote { note, channel, time });
 
-    slot
+    channel
   }
 
-  fn note_off(&mut self, _: NoteSlot) {
+  fn note_off(&mut self, _: NoteChannel) {
     self.pressed = None;
   }
 
