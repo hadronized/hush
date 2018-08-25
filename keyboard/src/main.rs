@@ -8,7 +8,7 @@ extern crate hound;
 mod streaming;
 
 use alto::Source;
-use hush::instrument::{Instrument, Synth};
+use hush::instrument::{Instrument, NoteSlot, Synth};
 use hush::note;
 use hush::time::SampleTime;
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
@@ -121,7 +121,7 @@ fn main() {
           match key {
             Key::Q | Key::W | Key::E | Key::R | Key::T | Key::Y | Key::U | Key::I | Key::O | Key::P | Key::LeftBracket | Key::RightBracket => {
               println!("off");
-              synth.note_off();
+              synth.note_off(NoteSlot::default());
             }
 
             _ => ()

@@ -6,15 +6,16 @@ use oscillator::{Oscillator, sine_wave, square_wave, triangle_wave, sawtooth_wav
 use time::SampleTime;
 use sample::Sample;
 
-/// A channel instrument.
+/// An instrument.
 ///
-/// A channel instrument can play notes.
+/// An instrument can play notes by pressing and releasing them. Notes can be played independently
+/// from each other, allowing for a rich and mixed audio signal. This is done through “note slots”.
 pub trait Instrument {
-  /// Trigger a note at a given time.
-  fn note_on(&mut self, note: Note, time: SampleTime);
+  /// Trigger a note at a given time on a given note slot.
+  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteSlot;
 
   /// Release a note.
-  fn note_off(&mut self);
+  fn note_off(&mut self, note_slot: NoteSlot);
 
   /// Is the instrument currently active / playing?
   fn is_active(&self) -> bool;
@@ -23,9 +24,27 @@ pub trait Instrument {
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
 }
 
+/// A note slot.
+///
+/// When an instrument is asked to play a note, it does it on a “note slot”, allowing for multiple
+/// notes to be played at the same time. The number of available slots is instrument-specific.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct NoteSlot(usize);
+
+impl NoteSlot {
+  pub fn new(i: usize) -> Self {
+    NoteSlot(i)
+  }
+
+  pub fn default() -> Self {
+    Self::new(0)
+  }
+}
+
 /// A note pressed at a given time.
 pub struct PressedNote {
   note: Note,
+  slot: NoteSlot,
   time: SampleTime
 }
 
@@ -74,11 +93,15 @@ impl Synth {
 }
 
 impl Instrument for Synth {
-  fn note_on(&mut self, note: Note, time: SampleTime) {
-    self.pressed = Some(PressedNote { note, time });
+  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteSlot {
+    let slot = NoteSlot::default();
+
+    self.pressed = Some(PressedNote { note, slot, time });
+
+    slot
   }
 
-  fn note_off(&mut self) {
+  fn note_off(&mut self, _: NoteSlot) {
     self.pressed = None;
   }
 
