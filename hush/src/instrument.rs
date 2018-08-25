@@ -13,13 +13,13 @@ pub trait Instrument {
   /// Trigger a note at a given time.
   fn note_on(&mut self, note: Note, time: SampleTime);
 
-  // Release a note.
+  /// Release a note.
   fn note_off(&mut self);
 
-  // Is the instrument currently active / playing?
+  /// Is the instrument currently active / playing?
   fn is_active(&self) -> bool;
 
-  // Get a few samples from this instrument.
+  /// Get a few samples from this instrument.
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
 }
 

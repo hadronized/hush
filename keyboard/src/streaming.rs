@@ -48,7 +48,6 @@ impl Streamer {
       self.queue_one_buffer(instrument); 
       self.source.play();
     } else {
-      //unimplemented!(); // RESET
       self.reset();
     }
   }
