@@ -66,7 +66,7 @@
 
 extern crate alloc;
 
-pub mod adsr;
+pub mod envelope;
 pub mod instrument;
 pub mod hertz;
 pub mod note;
