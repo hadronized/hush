@@ -3,7 +3,7 @@
 use hertz::Hertz;
 use note::Note;
 use oscillator::{Oscillator, sine_wave, square_wave, triangle_wave, sawtooth_wave};
-use time::SampleTime;
+use time::{SampleTime, Time};
 use sample::Sample;
 
 /// An instrument.
@@ -12,7 +12,7 @@ use sample::Sample;
 /// from each other, allowing for a rich and mixed audio signal. This is done through “note channels”.
 pub trait Instrument {
   /// Trigger a note at a given time on a given note channel.
-  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteChannel;
+  fn note_on(&mut self, note: Note, channel: NoteChannel);
 
   /// Release a note.
   fn note_off(&mut self, note_channel: NoteChannel);
@@ -45,7 +45,6 @@ impl NoteChannel {
 pub struct PressedNote {
   note: Note,
   channel: NoteChannel,
-  time: SampleTime
 }
 
 /// A synth.
@@ -93,12 +92,8 @@ impl Synth {
 }
 
 impl Instrument for Synth {
-  fn note_on(&mut self, note: Note, time: SampleTime) -> NoteChannel {
-    let channel = NoteChannel::default();
-
-    self.pressed = Some(PressedNote { note, channel, time });
-
-    channel
+  fn note_on(&mut self, note: Note, channel: NoteChannel) {
+    self.pressed = Some(PressedNote { note, channel });
   }
 
   fn note_off(&mut self, _: NoteChannel) {
