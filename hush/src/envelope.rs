@@ -3,6 +3,7 @@
 use time::Time;
 
 /// State of an ADSR.  pub enum ADSRState {
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ADSRState {
   /// The ADSR was enabled.
   ///
@@ -51,6 +52,11 @@ impl ADSR {
   // Switch off.
   pub fn off(&mut self, t: Time) {
     self.state = ADSRState::Off(t);
+  }
+
+  // Get the state of the envelope.
+  pub fn state(&self) -> ADSRState {
+    self.state
   }
 
   // Get the current value based on the current time.

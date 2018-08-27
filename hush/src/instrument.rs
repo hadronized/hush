@@ -18,7 +18,7 @@ pub trait Instrument {
   fn note_off(&mut self, note_channel: NoteChannel);
 
   /// Is the instrument currently active / playing?
-  fn is_active(&self) -> bool;
+  fn is_active(&self, t: Time) -> bool;
 
   /// Get a few samples from this instrument.
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample];
@@ -100,7 +100,7 @@ impl Instrument for Synth {
     self.pressed = None;
   }
 
-  fn is_active(&self) -> bool {
+  fn is_active(&self, _: Time) -> bool {
     self.pressed.is_some()
   }
 

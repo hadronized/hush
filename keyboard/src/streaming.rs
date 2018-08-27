@@ -1,6 +1,6 @@
 use alto::{Buffer, Context, Mono, Source, SourceState, StreamingSource};
 use hush::instrument::Instrument;
-use hush::time::SampleTime;
+use hush::time::{SampleTime, Time};
 
 const SAMPLE_FREQ: usize = 44100;
 const SAMPLE_READAHEAD: usize = 44100; // one second ahead
@@ -29,12 +29,12 @@ impl Streamer {
 
   /// Refresh the streaming process to check whether the DSP and/or streaming buffers should be
   /// updated.
-  pub fn refresh<I>(&mut self, instrument: &mut I) where I: Instrument {
+  pub fn refresh<I>(&mut self, instrument: &mut I, t: Time) where I: Instrument {
     self.recycle_dsp_buffers();
 
     // first thing first: we check the state of the DSP
     if self.source.state() == SourceState::Playing {
-      if instrument.is_active() {
+      if instrument.is_active(t) {
         // DSP playing and instrument is still active: we need to check whether some more data is
         // needed
         self.active_playing(instrument);
@@ -42,7 +42,7 @@ impl Streamer {
         // DSP is playing but the instrument is not active anymore: reset
         self.reset();
       }
-    } else if instrument.is_active() {
+    } else if instrument.is_active(t) {
       // the DSP is not playing but the instrument is active, so we need to queue at
       // least one buffer in
       self.queue_one_buffer(instrument); 

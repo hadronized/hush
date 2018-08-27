@@ -8,24 +8,27 @@ extern crate hound;
 mod streaming;
 
 use alto::Source;
-use hush::envelope::ADSR;
+use hush::envelope::{ADSR, ADSRState};
 use hush::instrument::{Instrument, NoteChannel, Synth};
 use hush::note::{self, Note};
 use hush::sample::Sample;
-use hush::time::SampleTime;
+use hush::time::{SampleTime, Time};
 use luminance_glfw::surface::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
+use std::time::Instant;
 
 // Our instrument is a Synth with an ADSR envelope.
 struct SynthADSR {
   synth: Synth,
-  envelope: ADSR
+  envelope: ADSR,
+  source_time: Instant
 }
 
 impl SynthADSR {
   fn new(synth: Synth) -> Self {
     let envelope = ADSR::new(0.2, 0.1, 0.9, 1.).expect("ADSR envelope");
+    let source_time = Instant::now();
 
-    SynthADSR { synth, envelope }
+    SynthADSR { synth, envelope, source_time }
   }
 
   pub fn sine() -> Self {
@@ -48,19 +51,34 @@ impl SynthADSR {
 impl Instrument for SynthADSR {
   fn note_on(&mut self, note: Note, channel: NoteChannel) {
     self.synth.note_on(note, channel);
+    self.envelope.on(time_from_instant(&self.source_time));
   }
 
   fn note_off(&mut self, _: NoteChannel) {
-
+    self.envelope.off(time_from_instant(&self.source_time));
   }
 
-  fn is_active(&self) -> bool {
-    unimplemented!()
+  fn is_active(&self, t: Time) -> bool {
+    match self.envelope.state() {
+      ADSRState::On(_) => true,
+      ADSRState::Off(_) => {
+        // when the signal hits 0, it’s officially unactive
+        self.envelope.get(t) > 0.
+      }
+    }
   }
 
   fn get_samples(&mut self, start: SampleTime, end: SampleTime) -> &[Sample] {
     unimplemented!()
   }
+}
+
+fn time_from_instant(instant: &Instant) -> f32 {
+  let duration = instant.elapsed();
+  let secs = duration.as_secs() as f32;
+  let millis = duration.subsec_millis() as f32;
+
+  secs + millis * 1e-3
 }
 
 fn main() {
@@ -76,7 +94,12 @@ fn main() {
   // for streaming
   let mut streamer = streaming::Streamer::new(&mut al_ctx);
 
+  // for timing
+  let now = Instant::now();
+
   'app: loop {
+    let t = time_from_instant(&now);
+
     for event in surface.poll_events() {
       match event {
         WindowEvent::Close | WindowEvent::Key(Key::Escape, _, Action::Release, _) => {
@@ -183,6 +206,6 @@ fn main() {
     }
 
     // handle streaming
-    streamer.refresh(&mut synth);
+    streamer.refresh(&mut synth, t);
   }
 }
